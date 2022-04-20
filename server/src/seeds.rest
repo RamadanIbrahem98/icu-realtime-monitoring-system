@@ -1,0 +1,53 @@
+@contentType = application/json
+
+### Get all data at app start
+GET http://localhost:80/all-data
+
+### Post a new room
+POST http://localhost:80/rooms
+Content-Type: {{contentType}}
+
+{
+    "number": "ABC111",
+    "capacity": 5
+}
+
+### Post a new patient
+POST http://localhost:80/patients
+Content-Type: {{contentType}}
+
+{
+    "code": "PATIENT111",
+    "name": "ahmed",
+    "room_id": 1
+}
+
+### Post a new sensor
+POST http://localhost:80/sensors
+Content-Type: {{contentType}}
+
+{
+    "serial_number": "ABC111",
+    "type": "Heart Rate",
+    "room_id": 1,
+    "patient_id": 1
+}
+
+### Post a new reading
+POST http://localhost:80/sensors/reading
+Content-Type: {{contentType}}
+
+{
+    "sensor_id": 2,
+    "value": 37.8
+}
+
+### update sensor place
+PATCH http://localhost:80/sensors/rotate-patient
+Content-Type: {{contentType}}
+
+{
+    "serial_number": 2,
+    "room_id": 1,
+    "patient_id": 2
+}
