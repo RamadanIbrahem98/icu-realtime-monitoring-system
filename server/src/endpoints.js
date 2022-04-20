@@ -83,8 +83,8 @@ const rotateSensorPatient = async (req, res) => {
 
 const addSensorReading = async (req, res) => {
   try {
-    const { serial_number, value } = req.body;
-    const sensor = await db.addSensorReading(serial_number, value);
+    const { sensor_id, value } = req.body;
+    const sensor = await db.addSensorReading(sensor_id, value);
     res.status(201).json(sensor);
   } catch {
     res.status(500).send('Error adding sensor reading');

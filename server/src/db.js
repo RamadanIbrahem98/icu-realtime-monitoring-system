@@ -33,7 +33,7 @@ async function config() {
           id INTEGER,
           code TEXT NOT NULL UNIQUE,
           name TEXT NOT NULL,
-          room_id INTEGER,
+          room_id INTEGER NOT NULL,
           PRIMARY KEY (id),
           FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
         )`,
@@ -48,8 +48,8 @@ async function config() {
           id INTEGER,
           serial_number TEXT NOT NULL UNIQUE,
           type TEXT NOT NULL,
-          room_id INTEGER,
-          patient_id INTEGER,
+          room_id INTEGER NOT NULL,
+          patient_id INTEGER NOT NULL,
           PRIMARY KEY (id),
           FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
           FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
@@ -64,7 +64,7 @@ async function config() {
         `CREATE TABLE IF NOT EXISTS readings (
           id INTEGER, 
           value REAL NOT NULL,
-          sensor_id INTEGER,
+          sensor_id INTEGER NOT NULL,
           timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (id),
           FOREIGN KEY (sensor_id) REFERENCES sensors(id) ON DELETE CASCADE
