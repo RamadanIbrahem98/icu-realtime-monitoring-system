@@ -2,7 +2,7 @@
   "name": "icu",
   "version": "1.0.0",
   "description": "A websocket server for intensive care unit monitors readings",
-  "main": "app.js",
+  "main": "./src/app.js",
   "scripts": {
     "start": "node src/app.js"
   },
