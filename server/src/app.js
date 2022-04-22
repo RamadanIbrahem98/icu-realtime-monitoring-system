@@ -24,16 +24,19 @@ let chip;
 const devices = {};
 
 emitter.on('controlSignal', (signal) => {
-  chip.send(signal);
+  chip.send(signal, { binary: false });
 });
 
-emitter.on('sendReading', (reading) => {
-  const { sensor, value } = reading;
-  devices.forEach((device) => {
-    if (device[1] === sensor) {
-      device[0].send(value);
+emitter.on('sendReading', ({ sensor_id, value }) => {
+  try {
+    for (const [_, [ws, sensor]] of Object.entries(devices)) {
+      if (sensor === sensor_id) {
+        ws.send(value, { binary: false });
+      }
     }
-  });
+  } catch {
+    logger('ERROR', 'WebSocket', 'Could not send reading to device');
+  }
 });
 
 wss.on('connection', function connection(ws, req) {
@@ -44,11 +47,15 @@ wss.on('connection', function connection(ws, req) {
       ws.on('message', async (message) => {
         logger('DATA', 'Master', message);
         try {
-          reading = JSON.parse(message);
-          await db.addSensorReading(reading.sensor_id, reading.value);
+          reading = await JSON.parse(message);
           emitter.emit('sendReading', reading);
         } catch (error) {
-          logger('ERROR', 'Master Data', 'Parsing JSON Data');
+          logger('ERROR', 'Master Data', 'Parsing JSON Data 50');
+        }
+        try {
+          await db.addSensorReading(reading.sensor_id, reading.value);
+        } catch {
+          logger('ERROR', 'DATABASE', 'Could not insert new reading');
         }
       });
       chip.on('close', () => {
@@ -58,7 +65,7 @@ wss.on('connection', function connection(ws, req) {
     case '/slave':
       logger('INFO', 'Slave', 'Slave Connected');
       ws.plottedSensor = null;
-      devices[ws.id] = [ws, null];
+      devices[ws] = [ws, null];
       ws.on('message', async (signal) => {
         signal = await JSON.parse(signal);
         if (signal.type === 'control') {
@@ -66,7 +73,7 @@ wss.on('connection', function connection(ws, req) {
           emitter.emit('controlSignal', signal.value);
         } else if (signal.type === 'sensor') {
           logger('DATA', 'Slave', signal);
-          devices[ws.id][1] = signal.value;
+          devices[ws][1] = signal.value;
         }
       });
       break;
