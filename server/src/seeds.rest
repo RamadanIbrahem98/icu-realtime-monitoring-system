@@ -43,7 +43,7 @@ Content-Type: {{contentType}}
 }
 
 ### update sensor place
-PATCH http://localhost:80/sensors/rotate-patient
+PATCH http://localhost:80/sensors/rotate-sensor
 Content-Type: {{contentType}}
 
 {
