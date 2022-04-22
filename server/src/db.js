@@ -8,9 +8,9 @@ db.addNewSensor = addNewSensor;
 db.addSensorReading = addSensorReading;
 db.rotatePatientSensor = rotatePatientSensor;
 db.getAllData = getAllData;
-db.getRoomsIds = getRoomsIds;
-db.getPatientsIdsByRoom = getPatientsIdsByRoom;
-db.getSensorsIdsByPatient = getSensorsIdsByPatient;
+db.getRooms = getRooms;
+db.getPatientsByRoom = getPatientsByRoom;
+db.getSensorsByPatient = getSensorsByPatient;
 
 async function config() {
   return new Promise((resolve, reject) => {
@@ -160,12 +160,12 @@ async function addSensorReading(sensor_id, value) {
   });
 }
 
-async function getRoomsIds() {
+async function getRooms() {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       db.all(
         `
-        SELECT id FROM rooms;
+        SELECT id as room_id, capacity as room_capacity FROM rooms;
         `,
         (err, res) => {
           err ? reject(err) : resolve(res);
@@ -175,12 +175,12 @@ async function getRoomsIds() {
   });
 }
 
-async function getPatientsIdsByRoom(room_id) {
+async function getPatientsByRoom(room_id) {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       db.all(
         `
-        SELECT id FROM patients WHERE room_id = ?;
+        SELECT id as patient_id, name as patient_name, code as patient_code FROM patients WHERE room_id = ?;
         `,
         [room_id],
         (err, res) => {
@@ -191,17 +191,33 @@ async function getPatientsIdsByRoom(room_id) {
   });
 }
 
-async function getSensorsIdsByPatient(patient_id) {
+async function getSensorsByPatient(patient_id) {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       db.all(
         `
-        SELECT id FROM sensors WHERE patient_id = ?;
+        SELECT id as sensor_id, serial_number as sensor_serial_number FROM sensors WHERE patient_id = ?;
         `,
         [patient_id],
         (err, res) => {
           err ? reject(err) : resolve(res);
         },
+      );
+    });
+  });
+}
+
+async function getSensorReadings(sensor_id) {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.all(
+        `
+        SELECT timestamp, value FROM readings
+        WHERE sensor_id = ?
+        ORDER BY timestamp DESC
+        `,
+        [sensor_id],
+        (err, data) => (err ? reject(err) : resolve(data)),
       );
     });
   });
