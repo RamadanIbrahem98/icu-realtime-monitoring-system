@@ -38,8 +38,9 @@ const getAllData = async (req, res) => {
       }),
     );
     res.json(rooms);
-  } catch {
-    res.status(500).send('Error getting data');
+  } catch (err) {
+    logger('ERROR', 'API', `Error Fetching all-data ${err}`);
+    res.status(500).send('Error Fetching all-data');
   }
 };
 
@@ -49,7 +50,8 @@ const addNewRoom = async (req, res) => {
     await db.addNewRoom(number, capacity);
     return res.status(201).json({});
   } catch (err) {
-    return res.status(500).send(err);
+    logger('ERROR', 'API', `Error adding new room ${err}`);
+    return res.status(500).send('Error adding new room');
   }
 };
 
@@ -58,7 +60,8 @@ const addNewPatient = async (req, res) => {
     const { code, name, room_id } = req.body;
     await db.addNewPatient(code, name, room_id);
     res.status(201).json({});
-  } catch {
+  } catch (err) {
+    logger('ERROR', 'API', `Error adding new patient ${err}`);
     res.status(500).send('Error adding new patient');
   }
 };
@@ -69,7 +72,8 @@ const addNewSensor = async (req, res) => {
     await db.addNewSensor(serial_number, type, room_id, patient_id);
     res.status(201).json({});
   } catch (err) {
-    res.status(500).send(err);
+    logger('ERROR', 'API', `Error adding new sensor ${err}`);
+    res.status(500).send('Error adding new sensor');
   }
 };
 
@@ -82,7 +86,8 @@ const rotateSensorPatient = async (req, res) => {
       patient_id,
     );
     res.status(200).json(sensor);
-  } catch {
+  } catch (err) {
+    logger('ERROR', 'API', `Error rotating sensor to another patient ${err}`);
     res.status(500).send('Error rotating sensor patient');
   }
 };
@@ -92,7 +97,8 @@ const addSensorReading = async (req, res) => {
     const { sensor_id, value } = req.body;
     const sensor = await db.addSensorReading(sensor_id, value);
     res.status(201).json(sensor);
-  } catch {
+  } catch (err) {
+    logger('ERROR', 'API', `Error adding sensor reading ${err}`);
     res.status(500).send('Error adding sensor reading');
   }
 };
@@ -103,7 +109,8 @@ const getSensorReadings = async (req, res) => {
     const sensorReadigns = await db.getSensorReadings(sensor_id);
     res.status(200).json({ readings: sensorReadigns });
   } catch (err) {
-    res.status(500).send(`Error fetching sensor readings ${err}`);
+    logger('ERROR', 'API', `Error fetching sensor readings ${err}`);
+    res.status(500).send(`Error fetching sensor readings`);
   }
 };
 

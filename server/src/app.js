@@ -12,6 +12,11 @@ server.use(cors());
 server.use(express.json());
 db.config();
 
+server.use((req, res, next) => {
+  logger('INFO', 'API', `${req.method} ${req.path}`);
+  next();
+});
+
 server.use('/', router);
 
 server = server.listen(process.env.PORT || 80, () =>
@@ -50,7 +55,7 @@ wss.on('connection', function connection(ws, req) {
           reading = await JSON.parse(message);
           emitter.emit('sendReading', reading);
         } catch (error) {
-          logger('ERROR', 'Master Data', 'Parsing JSON Data 50');
+          logger('ERROR', 'Master Data', 'Parsing JSON Data');
         }
         try {
           await db.addSensorReading(reading.sensor_id, reading.value);
