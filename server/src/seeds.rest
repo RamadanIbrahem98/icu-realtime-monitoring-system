@@ -3,6 +3,9 @@
 ### Get all data at app start
 GET http://localhost:80/all-data
 
+### Get all readings of a sensor
+GET http://localhost:80/sensors/2/reading
+
 ### Post a new room
 POST http://localhost:80/rooms
 Content-Type: {{contentType}}

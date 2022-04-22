@@ -1,7 +1,7 @@
 const express = require('express');
 
 const db = require('./db');
-const logger = require('./logger');
+const { logger } = require('./logger');
 
 const router = express.Router();
 
@@ -105,7 +105,7 @@ const addSensorReading = async (req, res) => {
 
 const getSensorReadings = async (req, res) => {
   try {
-    const { sensor_id } = req.body;
+    const { sensor_id } = req.params;
     const sensorReadigns = await db.getSensorReadings(sensor_id);
     res.status(200).json({ readings: sensorReadigns });
   } catch (err) {
@@ -118,7 +118,8 @@ router.route('/all-data').get(getAllData);
 router.route('/rooms').post(addNewRoom);
 router.route('/patients').post(addNewPatient);
 router.route('/sensors').post(addNewSensor);
-router.route('/sensors/reading').get(getSensorReadings).post(addSensorReading);
+router.route('/sensors/reading').post(addSensorReading);
+router.route('/sensors/:sensor_id/reading').get(getSensorReadings);
 router.route('/sensors/rotate-sensor').patch(rotateSensorPatient);
 
 module.exports = router;

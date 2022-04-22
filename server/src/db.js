@@ -11,6 +11,7 @@ db.getAllData = getAllData;
 db.getRooms = getRooms;
 db.getPatientsByRoom = getPatientsByRoom;
 db.getSensorsByPatient = getSensorsByPatient;
+db.getSensorReadings = getSensorReadings;
 
 async function config() {
   return new Promise((resolve, reject) => {
