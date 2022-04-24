@@ -1,0 +1,20 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Saeed",
+  "license": "ISC",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [],
+  "description": "",
+  "dependencies": {
+    "ws": "^8.5.0"
+  }
+}
