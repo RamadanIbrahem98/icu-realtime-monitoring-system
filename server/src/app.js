@@ -26,19 +26,25 @@ server = server.listen(process.env.PORT || 80, () =>
 const wss = new Server({ server });
 
 let chip;
-const devices = {};
+const devices = [];
 
-emitter.on('controlSignal', (signal) => {
-  chip.send(signal, { binary: false });
+emitter.on('controlSignal', (data) => {
+  chip.send(JSON.stringify({ id: data.sensor_id, is_active: data.state }), {
+    binary: false,
+  });
 });
 
 emitter.on('sendReading', ({ sensor_id, value }) => {
   try {
-    for (const [_, [ws, sensor]] of Object.entries(devices)) {
-      if (sensor === sensor_id) {
-        ws.send(value, { binary: false });
+    data = {
+      timestamp: new Date().toISOString(),
+      value,
+    };
+    devices.forEach((device) => {
+      if (device.plottedSensor === sensor_id) {
+        device.send(JSON.stringify(data), { binary: false });
       }
-    }
+    });
   } catch {
     logger('ERROR', 'WebSocket', 'Could not send reading to device');
   }
@@ -59,8 +65,8 @@ wss.on('connection', function connection(ws, req) {
         }
         try {
           await db.addSensorReading(reading.sensor_id, reading.value);
-        } catch {
-          logger('ERROR', 'DATABASE', 'Could not insert new reading');
+        } catch (err) {
+          logger('ERROR', 'DATABASE', err);
         }
       });
       chip.on('close', () => {
@@ -70,15 +76,15 @@ wss.on('connection', function connection(ws, req) {
     case '/slave':
       logger('INFO', 'Slave', 'Slave Connected');
       ws.plottedSensor = null;
-      devices[ws] = [ws, null];
+      devices.push(ws);
       ws.on('message', async (signal) => {
+        logger('DATA', 'Slave', signal);
         signal = await JSON.parse(signal);
         if (signal.type === 'control') {
-          logger('DATA', 'Slave', signal);
-          emitter.emit('controlSignal', signal.value);
+          data = { state: signal.state, sensor_id: ws.plottedSensor };
+          emitter.emit('controlSignal', data);
         } else if (signal.type === 'sensor') {
-          logger('DATA', 'Slave', signal);
-          devices[ws][1] = signal.value;
+          ws.plottedSensor = signal.sensor_id;
         }
       });
       break;
