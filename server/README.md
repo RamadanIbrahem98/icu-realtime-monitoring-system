@@ -137,23 +137,36 @@ Used to connect a mobile device to the server
 
 Slave can send two types of messages:
 
-Control Signal Message 
-<br><br>
+- Control Signal Message 
+
 <pre>
 req body {
   "type": "control",
-  "active": true,
+  "state": true,
 }
 </pre>
 
-Select Sensor Message
+This would be forwarded to the ESP on the following format:
 <br><br>
+<pre>
+{
+  "sensor_id": 1,
+  "is_active": true,
+}
+</pre>
+
+The sensor id is fetched from the ws connection pereference
+
+- Select Sensor Message
+
 <pre>
 req body {
   "type": "sensor",
   "sensor_id": 1,
 }
 </pre>
+
+This will make the ESP to send the readings of the sensor with the id of 1, by adding this id to the ws connection object
 
 Control Signal Message is emmited directly to the ESP
 
@@ -175,4 +188,11 @@ req body {
 }
 </pre>
 This message is emitted to the slaves interested in the sensor and also saved to the database.
+
+message sent to slave would be on the following format:
+<pre>
+{
+  "timestamp": "2022-04-27T17:55:35.410Z",
+  "value": 37.5,
+}
 </details>
