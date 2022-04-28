@@ -29,20 +29,31 @@ let chip;
 const devices = [];
 
 emitter.on('controlSignal', (data) => {
-  chip.send(JSON.stringify({ id: data.sensor_id, is_active: data.state }), {
-    binary: false,
-  });
+  chip.send(
+    JSON.stringify({ id: data.sensor_id, active: data.state ? 1 : 0 }),
+    {
+      binary: false,
+    },
+  );
 });
 
-emitter.on('sendReading', ({ sensor_id, value }) => {
+emitter.on('sendReading', (data) => {
   try {
-    data = {
-      timestamp: new Date().toISOString(),
-      value,
-    };
     devices.forEach((device) => {
-      if (device.plottedSensor === sensor_id && device.isOpen) {
-        device.buffer.push(data);
+      if (device.isOpen) {
+        for (const [id, value] of Object.entries(data)) {
+          if (device.buffer[parseInt(id, 10)]) {
+            device.buffer[parseInt(id, 10)].push({
+              timestamp: new Date().toISOString(),
+              value,
+            });
+          } else {
+            device.buffer[parseInt(id, 10)] = [
+              { timestamp: new Date().toISOString(), value },
+            ];
+          }
+        }
+        console.log(device.buffer);
         if (device.buffer.length > 100) {
           device.buffer.shift();
         }
@@ -70,7 +81,7 @@ wss.on('connection', function connection(ws, req) {
           logger('ERROR', 'Master Data', 'Parsing JSON Data');
         }
         try {
-          await db.addSensorReading(reading.sensor_id, reading.value);
+          // await db.addSensorReading(reading.sensor_id, reading.value);
         } catch (err) {
           logger('ERROR', 'DATABASE', err);
         }
@@ -83,7 +94,7 @@ wss.on('connection', function connection(ws, req) {
       logger('INFO', 'Slave', 'Slave Connected');
       ws.plottedSensor = null;
       ws.isOpen = true;
-      ws.buffer = [];
+      ws.buffer = {};
       devices.push(ws);
       ws.on('message', async (signal) => {
         logger('DATA', 'Slave', signal);
@@ -93,7 +104,7 @@ wss.on('connection', function connection(ws, req) {
           emitter.emit('controlSignal', data);
         } else if (signal.type === 'sensor') {
           ws.plottedSensor = signal.sensor_id;
-          ws.buffer = [];
+          ws.buffer = {};
         } else if (signal.type === 'toggle') {
           ws.isOpen = signal.toggle;
         }
