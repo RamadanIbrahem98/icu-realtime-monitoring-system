@@ -6,11 +6,11 @@ const byte numChars = 32;
 char receivedChars[numChars];   // an array to store the received data
 boolean newData = false;
 bool connected = false;
-String path = "192.168.1.9";
+String path = "192.168.43.226";
 //String path = "indoor-localization-sbme.herokuapp.com" ;
-int port = 8080;
+int port = 80;
 String url = "/master" ;
-char * username = "we" ;
+char * username = "Ahmed Galal " ;
 char * password = "88888888";
 
 void setup() {

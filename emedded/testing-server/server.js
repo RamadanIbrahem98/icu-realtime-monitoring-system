@@ -1,12 +1,14 @@
 import { WebSocketServer } from 'ws';
 
+const myObject = { id: 2, active: 1 };
 const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', function connection(ws) {
   console.log('connected');
   ws.on('message', function message(data) {
     console.log('received: %s', data);
-    ws.send('{id:1,active:true}');
-    console.log('sent: %s', '{id:1,active:false}'); //without /n
+    const stringifiyObject = JSON.stringify(myObject);
+    ws.send(stringifiyObject);
+    console.log('sent: %s', stringifiyObject); //without /n
   });
 });
 

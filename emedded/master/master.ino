@@ -1,20 +1,26 @@
 #include <ArduinoJson.h>
-#define TEMP A0
-#define LDR A1
+#define SENSOR1 A0
+#define SENSOR2 A1
+#define SENSOR1_LED 8
+#define SENSOR2_LED 12
 int servo1 = 30 ;
 const byte numChars = 32;
 char receivedChars[numChars];  // an array to store the received data
 boolean newData = false;
 String sensorValues ;
 String objectString = "";
-int sensor1Id = 0 ;
-int sensor2Id = 1 ;
-bool senosr1Acative = true ;
-bool senosr2Acative = true ;
+int sensor1Id = 3 ;
+int sensor2Id = 2 ;
+int senosr1Acative = 1 ;
+int senosr2Acative = 1 ;
 void setup() {
   Serial.begin(38400);
-  pinMode(TEMP, INPUT);
-  pinMode(LDR, INPUT);
+  pinMode(SENSOR1,INPUT);
+  pinMode(SENSOR2,INPUT);
+  pinMode(SENSOR1_LED,OUTPUT);
+  pinMode(SENSOR2_LED,OUTPUT);
+
+
 }
 
 void loop() {
@@ -29,15 +35,22 @@ void collectSensorData() {
   StaticJsonDocument<CAPACITY> doc;
   // create an object
   JsonObject object = doc.to<JsonObject>();
+    object["3"] = analogRead(SENSOR1);
+    object["2"] = analogRead(SENSOR2);;
+    sensorValues = " " ;
+    serializeJson(doc, sensorValues);
+    Serial.println(sensorValues);
+    delay(1000);
   if (senosr1Acative) {
-    object["TEMP"] = 20;
-  }
+    digitalWrite(SENSOR1_LED,HIGH);
+  }else{
+        digitalWrite(SENSOR1_LED,LOW);
+    }
   if (senosr2Acative) {
-    object["LDR"] = 20;
-  }
-  sensorValues = " " ;
-  serializeJson(doc, sensorValues);
-  Serial.println(sensorValues);
+    digitalWrite(SENSOR2_LED,HIGH);
+  }else{
+        digitalWrite(SENSOR2_LED,LOW);
+    }
 }
 
 void recvWithEndMarker() {
@@ -67,10 +80,10 @@ void changeState() {
   if (newData == true) {
     StaticJsonDocument<200> doc;
     deserializeJson(doc, receivedChars);
-    if (doc["id"] == 0) {
+    if (doc["id"] == 3) {
       senosr1Acative = doc["active"];
     }
-    else if (doc["id"] == 1) {
+    else if (doc["id"] == 2) {
       senosr2Acative = doc["active"];
     }
     newData = false;
