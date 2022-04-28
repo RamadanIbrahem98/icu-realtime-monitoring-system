@@ -216,6 +216,7 @@ async function getSensorReadings(sensor_id) {
         SELECT timestamp, value FROM readings
         WHERE sensor_id = ?
         ORDER BY timestamp DESC
+        LIMIT 1000;
         `,
         [sensor_id],
         (err, data) => (err ? reject(err) : resolve(data)),

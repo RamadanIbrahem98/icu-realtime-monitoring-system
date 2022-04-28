@@ -5,7 +5,20 @@ const { logger } = require('./logger');
 
 const router = express.Router();
 
+// const colors = ['red', 'green', 'blue', 'orange', 'purple', 'pink'];
+
 const getAllData = async (req, res) => {
+  let colors = [
+    '#000000',
+    '#1ECBE1',
+    '#E1341E',
+    '#1DE22C',
+    '#E21DD3',
+    '#3BE41B',
+    '#C41BE4',
+    '#6B40BF',
+    '#94BF40',
+  ];
   try {
     const roomsIds = await db.getRooms();
     const rooms = await Promise.all(
@@ -16,9 +29,26 @@ const getAllData = async (req, res) => {
             const sensorsIds = await db.getSensorsByPatient(patient.patient_id);
             const sensors = await Promise.all(
               sensorsIds.map(async (sensor) => {
+                if (colors.length !== 0) {
+                  colors.shift();
+                } else {
+                  colors = [
+                    '#000000',
+                    '#1ECBE1',
+                    '#E1341E',
+                    '#1DE22C',
+                    '#E21DD3',
+                    '#3BE41B',
+                    '#C41BE4',
+                    '#6B40BF',
+                    '#94BF40',
+                  ];
+                  colors.shift();
+                }
                 return {
                   sensor_id: sensor.sensor_id,
                   sensor_serial_number: sensor.sensor_serial_number,
+                  color: colors[0],
                 };
               }),
             );
@@ -107,7 +137,7 @@ const getSensorReadings = async (req, res) => {
   try {
     const { sensor_id } = req.params;
     const sensorReadigns = await db.getSensorReadings(sensor_id);
-    res.status(200).json({ readings: sensorReadigns });
+    res.status(200).json({ readings: sensorReadigns.reverse() });
   } catch (err) {
     logger('ERROR', 'API', `Error fetching sensor readings ${err}`);
     res.status(500).send(`Error fetching sensor readings`);
@@ -119,7 +149,7 @@ router.route('/rooms').post(addNewRoom);
 router.route('/patients').post(addNewPatient);
 router.route('/sensors').post(addNewSensor);
 router.route('/sensors/reading').post(addSensorReading);
-router.route('/sensors/:sensor_id/reading').get(getSensorReadings);
+router.route('/sensors/:sensor_id/readings').get(getSensorReadings);
 router.route('/sensors/rotate-sensor').patch(rotateSensorPatient);
 
 module.exports = router;

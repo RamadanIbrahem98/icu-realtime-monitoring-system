@@ -41,12 +41,18 @@ emitter.on('sendReading', ({ sensor_id, value }) => {
       value,
     };
     devices.forEach((device) => {
-      if (device.plottedSensor === sensor_id) {
-        device.send(JSON.stringify(data), { binary: false });
+      if (device.plottedSensor === sensor_id && device.isOpen) {
+        device.buffer.push(data);
+        if (device.buffer.length > 100) {
+          device.buffer.shift();
+        }
+        device.send(JSON.stringify(device.buffer), {
+          binary: false,
+        });
       }
     });
-  } catch {
-    logger('ERROR', 'WebSocket', 'Could not send reading to device');
+  } catch (err) {
+    logger('ERROR', 'WebSocket', err);
   }
 });
 
@@ -76,6 +82,8 @@ wss.on('connection', function connection(ws, req) {
     case '/slave':
       logger('INFO', 'Slave', 'Slave Connected');
       ws.plottedSensor = null;
+      ws.isOpen = true;
+      ws.buffer = [];
       devices.push(ws);
       ws.on('message', async (signal) => {
         logger('DATA', 'Slave', signal);
@@ -85,6 +93,9 @@ wss.on('connection', function connection(ws, req) {
           emitter.emit('controlSignal', data);
         } else if (signal.type === 'sensor') {
           ws.plottedSensor = signal.sensor_id;
+          ws.buffer = [];
+        } else if (signal.type === 'toggle') {
+          ws.isOpen = signal.toggle;
         }
       });
       break;
