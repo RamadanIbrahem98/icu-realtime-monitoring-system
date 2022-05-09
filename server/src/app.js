@@ -53,13 +53,20 @@ emitter.on('sendReading', (data) => {
             ];
           }
         }
-        console.log(device.buffer);
         if (device.buffer.length > 100) {
-          device.buffer.shift();
+          Object.entries(device.buffer).forEach(([id, values]) => {
+            device.buffer[id] = values.slice(1);
+          });
         }
-        device.send(JSON.stringify(device.buffer), {
-          binary: false,
-        });
+        if (device.plottedSensor == 'summary') {
+          device.send(JSON.stringify(device.buffer), {
+            binary: false,
+          });
+        } else {
+          device.send(JSON.stringify(device.buffer[device.plottedSensor]), {
+            binary: false,
+          });
+        }
       }
     });
   } catch (err) {
@@ -92,7 +99,7 @@ wss.on('connection', function connection(ws, req) {
       break;
     case '/slave':
       logger('INFO', 'Slave', 'Slave Connected');
-      ws.plottedSensor = null;
+      ws.plottedSensor = 'summary';
       ws.isOpen = true;
       ws.buffer = {};
       devices.push(ws);
