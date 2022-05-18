@@ -6,12 +6,12 @@ const byte numChars = 32;
 char receivedChars[numChars];   // an array to store the received data
 boolean newData = false;
 bool connected = false;
-String path = "192.168.43.226";
+String path = "192.168.43.145";
 //String path = "indoor-localization-sbme.herokuapp.com" ;
 int port = 80;
 String url = "/master" ;
-char * username = "Ahmed Galal " ;
-char * password = "88888888";
+char * username = "AndroidAP3AA9" ;
+char * password = "Aa0951378264";
 
 void setup() {
   Serial.begin(38400);
