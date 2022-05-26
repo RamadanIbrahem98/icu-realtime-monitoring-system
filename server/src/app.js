@@ -78,17 +78,20 @@ wss.on('connection', function connection(ws, req) {
   switch (req.url) {
     case '/master':
       chip = ws;
+      let readings;
       logger('INFO', 'Master', 'Master Connected');
       ws.on('message', async (message) => {
         logger('DATA', 'Master', message);
         try {
-          reading = await JSON.parse(message);
-          emitter.emit('sendReading', reading);
+          readings = await JSON.parse(message);
+          emitter.emit('sendReading', readings);
         } catch (error) {
           logger('ERROR', 'Master Data', 'Parsing JSON Data');
         }
         try {
-          // await db.addSensorReading(reading.sensor_id, reading.value);
+          Object.entries(readings).forEach(async (entry) => {
+            await db.addSensorReading(Number(entry[0]), Number(entry[1]));
+          });
         } catch (err) {
           logger('ERROR', 'DATABASE', err);
         }

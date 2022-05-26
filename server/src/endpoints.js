@@ -98,8 +98,8 @@ const addNewPatient = async (req, res) => {
 
 const addNewSensor = async (req, res) => {
   try {
-    const { serial_number, type, room_id, patient_id } = req.body;
-    await db.addNewSensor(serial_number, type, room_id, patient_id);
+    const { serial_number, type, unit, room_id, patient_id } = req.body;
+    await db.addNewSensor(serial_number, type, unit, room_id, patient_id);
     res.status(201).json({});
   } catch (err) {
     logger('ERROR', 'API', `Error adding new sensor ${err}`);
@@ -119,6 +119,39 @@ const rotateSensorPatient = async (req, res) => {
   } catch (err) {
     logger('ERROR', 'API', `Error rotating sensor to another patient ${err}`);
     res.status(500).send('Error rotating sensor patient');
+  }
+};
+
+const getPatientSummary = async (req, res) => {
+  try {
+    const { patient_id } = req.params;
+    const patient_sensors = await db.getSensorsByPatient(patient_id);
+    const patient_summary = await Promise.all(
+      patient_sensors.map(async (sensor) => {
+        const sensors_readings = await db.getSensorReadings(sensor.sensor_id);
+        const data = await Promise.all(
+          sensors_readings.map((sensor_readings) => ({
+            timestamp: sensor_readings.timestamp,
+            value: sensor_readings.value,
+          })),
+        );
+        return {
+          sensor_id: sensor.sensor_id,
+          sensor_type: sensor.sensor_type,
+          sensor_unit: sensor.sensor_unit,
+          summary: 0,
+          readings: data.reverse(),
+        };
+      }),
+    );
+    patient_summary.forEach((sensor) => {
+      const sum = sensor['readings'].reduce((prev, cur) => cur.value + prev, 0);
+      sensor.summary = sum / sensor['readings'].length;
+    });
+    res.status(200).json(patient_summary);
+  } catch (err) {
+    logger('ERROR', 'API', `Error getting patient summary ${err}`);
+    res.status(500).send('Error getting patient summary');
   }
 };
 
@@ -149,6 +182,7 @@ router.route('/rooms').post(addNewRoom);
 router.route('/patients').post(addNewPatient);
 router.route('/sensors').post(addNewSensor);
 router.route('/sensors/reading').post(addSensorReading);
+router.route('/patients/:patient_id/summary').get(getPatientSummary);
 router.route('/sensors/:sensor_id/readings').get(getSensorReadings);
 router.route('/sensors/rotate-sensor').patch(rotateSensorPatient);
 

@@ -4,7 +4,7 @@
 GET http://localhost:80/all-data
 
 ### Get all readings of a sensor
-GET http://localhost:80/sensors/2/reading
+GET http://localhost:80/sensors/2/readings
 
 ### Post a new room
 POST http://localhost:80/rooms
@@ -20,7 +20,7 @@ POST http://localhost:80/patients
 Content-Type: {{contentType}}
 
 {
-    "code": "PATIENT111",
+    "code": "PATIENT1",
     "name": "ahmed",
     "room_id": 1
 }
@@ -30,10 +30,10 @@ POST http://localhost:80/sensors
 Content-Type: {{contentType}}
 
 {
-    "serial_number": "ABC111",
+    "serial_number": "ABC11",
     "type": "Heart Rate",
     "room_id": 1,
-    "patient_id": 1
+    "patient_id": 2
 }
 
 ### Post a new reading
@@ -54,3 +54,6 @@ Content-Type: {{contentType}}
     "room_id": 1,
     "patient_id": 2
 }
+
+### Get patient summary
+GET http://localhost:80/patients/1/summary

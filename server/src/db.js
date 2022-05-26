@@ -49,6 +49,7 @@ async function config() {
           id INTEGER,
           serial_number TEXT NOT NULL UNIQUE,
           type TEXT NOT NULL,
+          unit TEXT NOT NULL,
           room_id INTEGER NOT NULL,
           patient_id INTEGER NOT NULL,
           PRIMARY KEY (id),
@@ -113,14 +114,14 @@ async function addNewPatient(code, name, room_id) {
   });
 }
 
-async function addNewSensor(serial_number, type, room_id, patient_id) {
+async function addNewSensor(serial_number, type, unit, room_id, patient_id) {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       db.run(
         `
-        INSERT INTO sensors (serial_number, type, room_id, patient_id) VALUES (?, ?, ?, ?);
+        INSERT INTO sensors (serial_number, type, unit, room_id, patient_id) VALUES (?, ?, ?, ?, ?);
         `,
-        [serial_number, type, room_id, patient_id],
+        [serial_number, type, unit, room_id, patient_id],
         (err, res) => {
           err ? reject(err) : resolve(res);
         },
@@ -197,7 +198,7 @@ async function getSensorsByPatient(patient_id) {
     db.serialize(() => {
       db.all(
         `
-        SELECT id as sensor_id, serial_number as sensor_serial_number FROM sensors WHERE patient_id = ?;
+        SELECT id as sensor_id, serial_number as sensor_serial_number, type as sensor_type, unit as sensor_unit FROM sensors WHERE patient_id = ?;
         `,
         [patient_id],
         (err, res) => {
@@ -216,7 +217,7 @@ async function getSensorReadings(sensor_id) {
         SELECT timestamp, value FROM readings
         WHERE sensor_id = ?
         ORDER BY timestamp DESC
-        LIMIT 1000;
+        LIMIT 50;
         `,
         [sensor_id],
         (err, data) => (err ? reject(err) : resolve(data)),
