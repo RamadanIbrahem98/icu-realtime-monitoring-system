@@ -4,7 +4,8 @@
   "description": "A websocket server for intensive care unit monitors readings",
   "main": "./src/app.js",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "author": "Ramadan Ibrahem",
   "license": "MIT",
@@ -12,7 +13,11 @@
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
+    "nanobuffer": "^3.0.0",
     "sqlite3": "^5.0.4",
     "ws": "^8.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.16"
   }
 }
